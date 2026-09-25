@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIM Dukcapil - Sistem Pelayanan Administrasi Kependudukan</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
+header{background:#125b83;color:#fff;padding:20px}.head{max-width:1100px;margin:auto}header h1{margin:0 0 5px;font-size:24px}
+nav{background:#fff;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:5}.navin{max-width:1100px;margin:auto;display:flex;overflow:auto}
+nav button{background:none;color:#333;border:0;border-radius:0;padding:15px 17px;white-space:nowrap}
+nav button.active{color:#125b83;border-bottom:3px solid #125b83;font-weight:bold}
+.container{max-width:1100px;margin:20px auto;padding:0 15px}.page{display:none}.page.active{display:block}
+section,.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px #0001}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:15px 0 20px}.card h3{margin:0 0 8px;color:#666;font-size:14px}.value{font-size:24px;font-weight:bold;color:#125b83}
+h2{margin-top:0;color:#125b83}form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+input,select,button,textarea{width:100%;padding:11px;border:1px solid #ddd;border-radius:8px;font-size:14px}button{background:#125b83;color:#fff;border:0;cursor:pointer;font-weight:bold}.full{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;margin-top:15px}th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}th{background:#edf4f8}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:bold}.wait{background:#fff1c7;color:#866000}.process{background:#dcecff;color:#175a9b}.done{background:#def3e5;color:#17653c}.cancel{background:#f9dddd;color:#a12626}
+.btnsmall{width:auto;padding:7px 9px;margin:2px;font-size:12px}.danger{background:#c0392b}.gray{background:#777}
+.flow{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}.flow div{padding:14px 18px;background:#e5f1f7;border-radius:10px;text-align:center;font-weight:bold}.arrow{background:none!important;padding:0!important;font-size:22px}
+.note{background:#eef6fa;padding:12px;border-radius:8px;margin-bottom:15px;font-size:14px}
+.search{display:flex;gap:10px;margin-bottom:15px}.search input{flex:1}.search button{width:auto}
+@media(max-width:750px){.cards{grid-template-columns:1fr 1fr}form{grid-template-columns:1fr}table{font-size:12px}.arrow{display:none}}
+@media(max-width:480px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="head"><h1>Sistem Informasi Pelayanan Dukcapil</h1><p>Simulasi Sistem Administrasi Kependudukan — Input, Proses & Output</p></div></header>
+
+<nav><div class="navin">
+<button class="active" onclick="showPage('dashboard',this)">🏠 Dashboard</button>
+<button onclick="showPage('penduduk',this)">👤 Data Penduduk</button>
+<button onclick="showPage('permohonan',this)">📄 Permohonan</button>
+<button onclick="showPage('status',this)">🔎 Cek Status</button>
+<button onclick="showPage('laporan',this)">📊 Laporan</button>
+</div></nav>
+
+<div class="container">
+
+<div id="dashboard" class="page active">
+<section><h2>Alur Sistem</h2><div class="flow">
+<div>INPUT<br><small>Data Penduduk & Permohonan</small></div><div class="arrow">→</div>
+<div>PROSES<br><small>Validasi & Verifikasi</small></div><div class="arrow">→</div>
+<div>OUTPUT<br><small>Status & Laporan</small></div>
+</div></section>
+<div class="cards">
+<div class="card"><h3>Total Penduduk</h3><div class="value" id="dashPenduduk">0</div></div>
+<div class="card"><h3>Permohonan Menunggu</h3><div class="value" id="dashWait">0</div></div>
+<div class="card"><h3>Sedang Diproses</h3><div class="value" id="dashProcess">0</div></div>
+<div class="card"><h3>Selesai</h3><div class="value" id="dashDone">0</div></div>
+</div>
+<section><h2>Permohonan Terbaru</h2><div id="latest"></div></section>
+</div>
+
+<div id="penduduk" class="page">
+<section><h2>👤 Data Penduduk</h2>
+<form id="pendudukForm">
+<input id="nik" maxlength="16" placeholder="NIK (16 digit)" required>
+<input id="kk" maxlength="16" placeholder="Nomor KK (16 digit)" required>
+<input id="nama" placeholder="Nama lengkap" required>
+<input id="lahir" type="date" required>
+<select id="jk"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+<input id="alamat" placeholder="Alamat lengkap" required>
+<button class="full" type="submit">+ Simpan Data Penduduk</button>
+</form>
+<table><thead><tr><th>NIK</th><th>Nama</th><th>No. KK</th><th>Jenis Kelamin</th><th>Alamat</th></tr></thead>
+<tbody id="pendudukTable"></tbody></table>
+</section></div>
+
+<div id="permohonan" class="page">
+<section><h2>📄 Permohonan Dokumen</h2>
+<div class="note">Masukkan NIK yang sudah terdaftar. Sistem akan mengambil nama penduduk dan membuat nomor permohonan otomatis.</div>
+<form id="permohonanForm">
+<input id="permNik" maxlength="16" placeholder="NIK pemohon" required>
+<select id="layanan">
+<option>Kartu Keluarga (KK)</option><option>KTP-el</option><option>Akta Kelahiran</option><option>Akta Kematian</option><option>Surat Pindah</option><option>Perubahan Data Kependudukan</option>
+</select>
+<textarea id="keterangan" class="full" placeholder="Keterangan / keperluan"></textarea>
+<button class="full" type="submit">Kirim Permohonan</button>
+</form>
+</section>
+<br>
+<section><h2>Daftar Permohonan</h2>
+<table><thead><tr><th>No. Permohonan</th><th>Pemohon</th><th>Layanan</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+<tbody id="permTable"></tbody></table>
+</section>
+</div>
+
+<div id="status" class="page">
+<section><h2>🔎 Cek Status Permohonan</h2>
+<div class="search"><input id="searchId" placeholder="Contoh: ADM-0001"><button onclick="checkStatus()">Cari</button></div>
+<div id="statusResult">Masukkan nomor permohonan untuk melihat status.</div>
+</section>
+</div>
+
+<div id="laporan" class="page">
+<section><h2>📊 Laporan Pelayanan</h2>
+<div class="cards">
+<div class="card"><h3>Total Permohonan</h3><div class="value" id="repTotal">0</div></div>
+<div class="card"><h3>Menunggu</h3><div class="value" id="repWait">0</div></div>
+<div class="card"><h3>Diproses</h3><div class="value" id="repProcess">0</div></div>
+<div class="card"><h3>Selesai</h3><div class="value" id="repDone">0</div></div>
+</div>
+<table><thead><tr><th>No.</th><th>NIK</th><th>Nama</th><th>Layanan</th><th>Status</th></tr></thead><tbody id="reportTable"></tbody></table>
+<br><button class="danger" onclick="resetData()">Reset Data Simulasi</button>
+</section>
+</div>
+</div>
+
+<script>
+let penduduk=JSON.parse(localStorage.getItem("duk_penduduk")||"[]");
+let permohonan=JSON.parse(localStorage.getItem("duk_permohonan")||"[]");
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+function save(){localStorage.setItem("duk_penduduk",JSON.stringify(penduduk));localStorage.setItem("duk_permohonan",JSON.stringify(permohonan))}
+function showPage(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");render()}
+function badge(s){let c=s==="Menunggu"?"wait":s==="Diproses"?"process":s==="Selesai"?"done":"cancel";return `<span class="badge ${c}">${s}</span>`}
+function render(){
+dashPenduduk.textContent=penduduk.length;
+dashWait.textContent=permohonan.filter(x=>x.status==="Menunggu").length;
+dashProcess.textContent=permohonan.filter(x=>x.status==="Diproses").length;
+dashDone.textContent=permohonan.filter(x=>x.status==="Selesai").length;
+pendudukTable.innerHTML=penduduk.length?penduduk.map(p=>`<tr><td>${esc(p.nik)}</td><td>${esc(p.nama)}</td><td>${esc(p.kk)}</td><td>${esc(p.jk)}</td><td>${esc(p.alamat)}</td></tr>`).join(""):`<tr><td colspan="5">Belum ada data penduduk.</td></tr>`;
+permTable.innerHTML=permohonan.length?permohonan.map((p,i)=>`<tr><td><b>${p.id}</b></td><td>${esc(p.nama)}<br><small>${p.nik}</small></td><td>${esc(p.layanan)}</td><td>${p.tanggal}</td><td>${badge(p.status)}</td><td>${p.status==="Menunggu"?`<button class="btnsmall" onclick="changeStatus(${i},'Diproses')">Proses</button>`:""}${p.status==="Diproses"?`<button class="btnsmall" onclick="changeStatus(${i},'Selesai')">Selesaikan</button>`:""}${p.status!=="Selesai"&&p.status!=="Dibatalkan"?`<button class="btnsmall danger" onclick="changeStatus(${i},'Dibatalkan')">Batalkan</button>`:""}</td></tr>`).join(""):`<tr><td colspan="6">Belum ada permohonan.</td></tr>`;
+let latest=permohonan.slice(-5).reverse();
+document.getElementById("latest").innerHTML=latest.length?latest.map(p=>`<p><b>${p.id}</b> — ${esc(p.nama)} — ${esc(p.layanan)} — ${badge(p.status)}</p>`).join(""):"Belum ada permohonan.";
+repTotal.textContent=permohonan.length;repWait.textContent=permohonan.filter(x=>x.status==="Menunggu").length;repProcess.textContent=permohonan.filter(x=>x.status==="Diproses").length;repDone.textContent=permohonan.filter(x=>x.status==="Selesai").length;
+reportTable.innerHTML=permohonan.length?permohonan.map(p=>`<tr><td>${p.id}</td><td>${p.nik}</td><td>${esc(p.nama)}</td><td>${esc(p.layanan)}</td><td>${badge(p.status)}</td></tr>`).join(""):`<tr><td colspan="5">Belum ada data.</td></tr>`;
+}
+pendudukForm.onsubmit=e=>{e.preventDefault();if(nik.value.length!==16||kk.value.length!==16||!/^\d+$/.test(nik.value)||!/^\d+$/.test(kk.value)){alert("NIK dan Nomor KK harus 16 digit angka.");return}if(penduduk.some(p=>p.nik===nik.value)){alert("NIK sudah terdaftar.");return}penduduk.push({nik:nik.value,kk:kk.value,nama:nama.value,lahir:lahir.value,jk:jk.value,alamat:alamat.value});save();e.target.reset();render();alert("Data penduduk berhasil disimpan.")};
+permohonanForm.onsubmit=e=>{e.preventDefault();let p=penduduk.find(x=>x.nik===permNik.value);if(!p){alert("NIK belum terdaftar pada Data Penduduk.");return}let id="ADM-"+String(permohonan.length+1).padStart(4,"0");permohonan.push({id,nik:p.nik,nama:p.nama,layanan:layanan.value,keterangan:keterangan.value,status:"Menunggu",tanggal:new Date().toLocaleDateString("id-ID")});save();e.target.reset();render();alert("Permohonan berhasil dibuat. Nomor: "+id);};
+function changeStatus(i,s){permohonan[i].status=s;save();render()}
+function checkStatus(){let id=searchId.value.trim().toUpperCase(),p=permohonan.find(x=>x.id===id);statusResult.innerHTML=p?`<div class="note"><b>Nomor Permohonan:</b> ${p.id}<br><b>Nama:</b> ${esc(p.nama)}<br><b>Layanan:</b> ${esc(p.layanan)}<br><b>Tanggal:</b> ${p.tanggal}<br><br><b>Status:</b> ${badge(p.status)}</div>`:`<div class="note">Nomor permohonan tidak ditemukan.</div>`}
+function resetData(){if(confirm("Hapus semua data simulasi?")){localStorage.removeItem("duk_penduduk");localStorage.removeItem("duk_permohonan");location.reload()}}
+render();
+</script>
+</body>
+</html>
